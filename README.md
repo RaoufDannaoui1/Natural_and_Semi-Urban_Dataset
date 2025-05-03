@@ -60,7 +60,7 @@ Tracks are spatially aligned using Leica’s post-processing software with cloud
 
 
 ## Data Availability
-> **The dataset files (point clouds, images, and trajectories) will be made publicly available after the acceptance of our ECMR 2025 paper.**
+> **The dataset files (point clouds, images, and trajectories) will be made publicly available upon the acceptance of our ECMR 2025 paper.**
 
 
 ## Citation
