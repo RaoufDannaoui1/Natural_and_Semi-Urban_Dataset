@@ -1,6 +1,8 @@
 # Natural and Semi-Urban  Dataset
-**Weekly Multi-Temporal LiDAR Dataset for Short-Term Localization and Environmental Change Analysis**
+**Weekly Multi-Temporal Dataset for Short-Term Localization and Environmental Change Analysis**
 
+Dataset website: [raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset/](https://raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset/)
+ 
 
 ## Overview
 The dataset is a short-term, high-resolution, multi-modal dataset focused on understanding how real-world changes—such as vegetation growth, trimming, and object displacement—affect 3D LiDAR-based localization in dynamic outdoor environments. The data was collected weekly from **February to April 2025**, across two contrasting outdoor scenarios:
@@ -22,16 +24,16 @@ Each weekly session contains:
 - **Data Structure (per week):**
     ```plaintext
     weekXX_hhmm-DD-MM-YYYY/
-    │-- assets/
+    │── assets/
     │   └── track_trajectories
     │
-    │-- images_360/
+    │── images_360/
     │   ├── SemiUrban_track1-2/
     │   └── Urban_track3-4/
     │
-    │-- point_clouds/
-    │   ├── SemiUrban_track1-2/
-    │   └── Urban_track3-4/
+    └── point_clouds/
+        ├── SemiUrban_track1-2/
+        └── Urban_track3-4/
     ```
 
 
@@ -60,11 +62,11 @@ Tracks are spatially aligned using Leica’s post-processing software with cloud
 
 
 ## Data Availability
-> **The dataset files (point clouds, images, and trajectories) will be made publicly available upon the acceptance of our ECMR 2025 paper.**
+> **The full dataset files (point clouds, images, and trajectories) will be made publicly available upon the acceptance of our ECMR 2025 paper.**
 
 
 ## Citation
-Please cite the following paper if you use this dataset in your research
+If you use this dataset in your research, please cite our paper (bibtex entry will be added upon publication). 
 
 
 ## Contact
