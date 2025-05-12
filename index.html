@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <title>Natural and Semi-Urban Dataset</title>
+
+  <link rel="stylesheet" href="stylesheets/styles.css">
+  <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+  <meta name="viewport" content="width=device-width">
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+  <div class="wrapper">
+    <header>
+      <h1>Natural and Semi-Urban Dataset</h1>
+      <p>A dataset designed to capture short-term environmental changes across both natural and semi-urban environments,
+        with specific aim of analyzing how such dynamics impact localization and re-localization performance.</p>
+      <p class="view">
+        <a href="https://github.com/RaoufDannaoui1/Natural_and_Semi-Urban_Dataset">
+          View the Project on GitHub
+          <small>RaoufDannaoui1/Natural_and_Semi-Urban_Dataset</small>
+        </a>
+      </p>
+      <!-- <ul>
+          <li><a href="https://github.com/orderedlist/minimal/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/orderedlist/minimal/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="http://github.com/orderedlist/minimal">Fork On <strong>GitHub</strong></a></li>
+        </ul> -->
+    </header>
+    <section>
+      <p><img src="images/header.png" alt="Dataset overview"></p>
+
+      <p><strong>Weekly Multi-Temporal Dataset for Short-Term Localization and Environmental Change Analysis,</strong>
+        designed to study the impact of real-world environmental changes on localization.</p>
+
+      <h2>Overview</h2>
+      <p>
+        The dataset is a short-term, high-resolution, multi-modal dataset focused on understanding how real-world
+        changes, such as vegetation growth, trimming, and object displacement, affect 3D LiDAR-based localization in
+        dynamic outdoor environments.
+      </p>
+      <p>
+        The data was collected weekly from February to April 2025, across two contrasting outdoor scenarios:
+      <ul>
+        <li>
+          <strong>Natural Environment:</strong> INRAE Forest, Clermont-Ferrand
+          <img src="images/natural_traj_cloud.png" alt="Natural environment "></img>
+        </li>
+        <li>
+          <strong>Semi-Urban Environment:</strong> Around Université Clermont Auvergne
+          <img src="images/semiurban_traj_cloud.png" alt="Semi-Urban environment">
+        </li>
+      </ul>
+
+      </p>
+      <p>
+        This dataset provides a unique opportunity to analyze and benchmark localization robustness over short time
+        intervals, making it ideal for applications in re-localization, change detection, SLAM, and dynamic mapping.
+      </p>
+
+      <h2>Data Content Description</h2>
+      <p>
+        <ul>
+          <li>Full 3D point clouds (colored and semantically segmented)</li>
+          <li>360° panoramic images</li>
+          <li>Synchronized GNSS/IMU trajectory logs</li>
+          <li>Camera trajectory files (timestamped)</li>
+        </ul>
+        <img src="images/pc_overview.png" alt="Leica Pegasus TRK100 mounted on a Zoe electric vehicle">
+
+      </p>
+
+      <h2>Acquisition Platform</h2>
+      <p>
+        All data is recorded using a Leica Pegasus TRK100 mounted on a Zoe electric vehicle, the Leica is equipped with:
+        <ul>
+          <li>Two 16-beam LiDARs</li>
+          <li>360° panoramic camera</li>
+          <li>GNSS and IMU for centimeter-level pose accuracy</li>
+        </ul>        
+        <img src="images/zoe_leica.jpeg" alt="Leica Pegasus TRK100 mounted on a Zoe electric vehicle">
+      </p>
+
+      <h2>Folder Structure</h2>
+      <pre><code>weekXX_hhmm-DD-MM-YYYY/
+      ├── assets/
+      │   └── track_trajectories/
+      ├── images_360/
+      │   ├── SemiUrban_track1-2/
+      │   └── Urban_track3-4/
+      └── point_clouds/
+          ├── SemiUrban_track1-2/
+          └── Urban_track3-4/</code></pre>
+
+      <h2>Data Download</h2>
+      <table>
+        <tr>
+          <th>Week</th>
+          <th>Link</th>
+        </tr>
+        <tr>
+          <td>week00_1400-10-02-2025</td>
+          <td><a href="https://nextcloud.inrae.fr/s/8qHDnyN6qYAPe3S">link</a></td>
+        </tr>
+        <tr>
+          <td>week01_0915-17-02-2025</td>
+          <td><a href="https://nextcloud.inrae.fr/s/WBD5ZJjNj8gbx9z">link</a></td>
+        </tr>
+      </table>
+      
+      <h2>Citation</h2>
+      <p>If you use this dataset in your research, please cite our paper (bibtex entry will be added upon publication).
+      </p>
+
+      <h2>License</h2>
+      <p>Data will be released under a permissive academic license (TBD).</p>
+
+      <h2>Contact</h2>
+      <p>
+        For questions or collaboration inquiries, please contact: <br><br>
+        Abdel-Raouf Dannaoui <br>
+        Ph.D. Candidate in Robotics -- INRAE <br>
+        <a href="mailto:dannaoui.abdelraouf@gmai.com">dannaoui.abdelraouf@gmai.com</a>
+      </p>
+    </section>
+
+    <footer>
+      <p>This project is maintained by
+        <a href="https://github.com/RaoufDannaoui1">Abdel-Raouf Dannaoui</a> - PhD Candidate in Computer Vision and
+        Robotics
+      </p>
+      <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small>
+      </p>
+    </footer>
+  </div>
+  <script src="javascripts/scale.fix.js"></script>
+</body>
+
+</html>
+
+abdelraouf-dannaoui.natural_and_semiurban_dataset
