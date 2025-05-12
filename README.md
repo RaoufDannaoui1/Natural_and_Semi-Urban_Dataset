@@ -74,4 +74,4 @@ For questions or collaborations, feel free to contact:
 
 **Abdel-Raouf Dannaoui**  
 Ph.D. Candidate in Robotics -- INRAE  
-dannaoui.abdelraouf@gmai.com
+dannaoui.abdelraouf@gmail.com
