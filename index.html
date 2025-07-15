@@ -66,11 +66,29 @@
       <h2>Data Content Description</h2>
       <p>
         <ul>
-          <li>Full 3D point clouds (colored and semantically segmented)</li>
-          <li>360° panoramic images</li>
-          <li>Synchronized GNSS/IMU trajectory logs</li>
-          <li>Camera trajectory files (timestamped)</li>
+          <li><strong>Colorized & classified point clouds</strong>
+            <ul>
+              <li>Provided per semantic class (ground, vegetation, vehicles, etc.)</li>
+              <li>~100 million points for a Semi-Urban map and ~150 million points for a Natural map</li>
+              <li>Average size: ~4 GB for a Semi-Urban map and ~5.5 GB for a Natural map (LAS format files)</li>
+            </ul>
+          </li>
+          <li><strong>Panoramic images</strong>
+            <ul>
+              <li>360° images captured every 3 meters along each track</li>
+              <li>~350 images per track (per direction)</li>
+              <li>Resolution: 7040x3520 pixels</li>
+              <li>Average size: ~2-3 MB per image (JPEG)</li>
+              <li>Includes GNSS-tagged camera trajectory</li>
+            </ul>
+          </li>
+          <li><strong>GNSS/IMU trajectories</strong>
+            <ul>
+              <li>Provides full pose: position (x, y, z) and orientation (quaternion: qw, qx, qy, qz)</li>
+            </ul>
+          </li>
         </ul>
+
         <img src="images/pc_overview.png" alt="Leica Pegasus TRK100 mounted on a Zoe electric vehicle">
 
       </p>
@@ -105,11 +123,11 @@
         </tr>
         <tr>
           <td>week00_1400-10-02-2025</td>
-          <td><a href="https://nextcloud.inrae.fr/s/8qHDnyN6qYAPe3S">link</a></td>
+          <td><a href="https://nextcloud.inrae.fr/s/8qHDnyN6qYAPe3S" target="_blank">link</a></td>
         </tr>
         <tr>
           <td>week01_0915-17-02-2025</td>
-          <td><a href="https://nextcloud.inrae.fr/s/WBD5ZJjNj8gbx9z">link</a></td>
+          <td><a href="https://nextcloud.inrae.fr/s/WBD5ZJjNj8gbx9z" target="_blank">link</a></td>
         </tr>
       </table>
       
