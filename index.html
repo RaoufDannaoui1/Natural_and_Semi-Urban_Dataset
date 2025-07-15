@@ -8,7 +8,12 @@
 
   <link rel="stylesheet" href="stylesheets/styles.css">
   <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
   <meta name="viewport" content="width=device-width">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
   <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
@@ -26,11 +31,6 @@
           <small>RaoufDannaoui1/Natural_and_Semi-Urban_Dataset</small>
         </a>
       </p>
-      <!-- <ul>
-          <li><a href="https://github.com/orderedlist/minimal/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/orderedlist/minimal/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="http://github.com/orderedlist/minimal">Fork On <strong>GitHub</strong></a></li>
-        </ul> -->
     </header>
     <section>
       <p><img src="images/header.png" alt="Dataset overview"></p>
@@ -96,12 +96,12 @@
       <h2>Acquisition Platform</h2>
       <p>
         All data is recorded using a Leica Pegasus TRK100 mounted on a Zoe electric vehicle, the Leica is equipped with:
-        <ul>
-          <li>Two 16-beam LiDARs</li>
-          <li>360° panoramic camera</li>
-          <li>GNSS and IMU for centimeter-level pose accuracy</li>
-        </ul>        
-        <img src="images/zoe_leica.jpeg" alt="Leica Pegasus TRK100 mounted on a Zoe electric vehicle">
+      <ul>
+        <li>Two 16-beam LiDARs</li>
+        <li>360° panoramic camera</li>
+        <li>GNSS and IMU for centimeter-level pose accuracy</li>
+      </ul>
+      <img src="images/zoe_leica.jpeg" alt="Leica Pegasus TRK100 mounted on a Zoe electric vehicle">
       </p>
 
       <h2>Folder Structure</h2>
@@ -115,25 +115,288 @@
           ├── SemiUrban_track1-2/
           └── Urban_track3-4/</code></pre>
 
-      <h2>Data Download</h2>
-      <table>
-        <tr>
-          <th>Week</th>
-          <th>Link</th>
-        </tr>
-        <tr>
-          <td>week00_1400-10-02-2025</td>
-          <td><a href="https://nextcloud.inrae.fr/s/8qHDnyN6qYAPe3S" target="_blank">link</a></td>
-        </tr>
-        <tr>
-          <td>week01_0915-17-02-2025</td>
-          <td><a href="https://nextcloud.inrae.fr/s/WBD5ZJjNj8gbx9z" target="_blank">link</a></td>
-        </tr>
-      </table>
+      <style>
+        table {
+          width: 100%;
+          margin: 20px auto;
+          border-collapse: collapse;
+        }
+
+        th,
+        td {
+          padding: 10px;
+          border: 1px solid #ccc;
+          text-align: left;
+        }
+
+        tr td:first-child,
+        tr td:nth-child(3) {
+          text-align: center;
+        }
+        
+        input[type="checkbox"] {
+          accent-color: #39c;
+          width: 18px;
+          height: 18px;
+          cursor: pointer;
+        }
+
+        .filters-container{
+          display: flex;
+          flex-direction: column;
+        }
+        select {
+          padding: 5px;
+          margin-bottom: 10px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          background-color: #8bd8ff;
+          transition: border-color 0.3s ease;
+        }
+        .downloadButton{
+          padding: 5px;
+          margin-top: 25px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          background-color: #2ea44f;
+          color: #fff;
+          font-weight: bold;
+        }
+        .downloadButton:hover{
+          background-color: #187a34;
+          transition: 0.3s;
+          cursor: pointer;
+        }
+        #selectAllBtn{
+          padding: 5px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          background-color: #8bd8ff;
+          cursor: pointer;
+        }
+        #selectAllBtn:hover{
+          background-color: #3cbeff;
+          transition: 0.3s;
+          cursor: pointer;
+        }
+        .spinner {
+          width: 40px;
+          height: 40px;
+          margin: auto;
+          border: 4px solid #ddd;
+          border-top: 4px solid #39c;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          0%   { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+      </style>
+
+
+      <h2>Browse Dataset Files</h2>
+      <div id="loadingMessage" style="text-align: center; margin: 40px;">
+        <div class="spinner"></div>
+        <p>Loading dataset files...</p>
+      </div>
+      <div id="mainContent" style="display: none;">
+        <div class="filters-container">
+          <label for="weekFilter">Choose Week:</label>
+          <select id="weekFilter">
+            <option value="all">All Weeks</option>
+          </select>
+  
+          <label for="typeFilter">Data Type:</label>
+          <select id="typeFilter">
+            <option value="all">All Types</option>
+            <option value="images_360">Images 360</option>
+            <option value="point_clouds">Point Clouds</option>
+            <option value="assets">Assets</option>
+          </select>
+  
+          <button class="downloadButton" onclick="downloadSelected()">Download Selected as ZIP</button>
+          
+        </div>
+        
+        <table id="fileTable">
+          <thead>
+            <tr>
+              <th style="min-width: 85px; text-align: center;"><button id="selectAllBtn" onclick="toggleSelectAll()">Select All</button></th>
+              <th>Files</th>
+              <th style="text-align: center;">Download</th>
+            </tr>
+          </thead>        
+          <tbody></tbody>
+        </table>
+      </div>
+
       
+
+      <script>
+        const repoId = "ardannaoui/Natural_and_Semi-Urban_Dataset";
+        const baseApiUrl = `https://huggingface.co/api/datasets/${repoId}/tree/main`;
+      
+        let allFiles = [];
+      
+        async function fetchTree(path = "") {
+          const url = `${baseApiUrl}/${path}`.replace(/\/+$/, "");
+          const res = await fetch(url);
+          const items = await res.json();
+      
+          for (const item of items) {
+            if (item.type === "file") {
+              allFiles.push(item.path);
+            } else if (item.type === "directory") {
+              await fetchTree(item.path); // Recursive call for folders
+            }
+          }
+        }
+      
+        async function loadAndRender() {
+          try {
+            await fetchTree(); // Start from root
+            populateFilters();
+            renderTable();
+
+            // Hide loading, show content
+            document.getElementById("loadingMessage").style.display = "none";
+            document.getElementById("mainContent").style.display = "block";
+          } catch (err) {
+            document.getElementById("loadingMessage").textContent = "Failed to load dataset.";
+            console.error("Loading error:", err);
+          }
+        }
+      
+        function populateFilters() {
+          const weekFilter = document.getElementById("weekFilter");
+          const weeks = new Set();
+      
+          allFiles.forEach(path => {
+            const parts = path.split('/');
+            if (parts[0].startsWith("week")) {
+              weeks.add(parts[0]);
+            }
+          });
+      
+          [...weeks].sort().forEach(week => {
+            const option = document.createElement("option");
+            option.value = week;
+            option.textContent = week;
+            weekFilter.appendChild(option);
+          });
+        }
+      
+        function renderTable() {
+          const weekValue = document.getElementById("weekFilter").value;
+          const typeValue = document.getElementById("typeFilter").value;
+          const tbody = document.querySelector("#fileTable tbody");
+          tbody.innerHTML = "";
+
+          const filtered = allFiles.filter(path => {
+            if (weekValue !== "all" && !path.startsWith(weekValue)) return false;
+            if (typeValue === "images_360" && !path.includes("/images_360/")) return false;
+            if (typeValue === "point_clouds" && !path.includes("/point_clouds/")) return false;
+            if (typeValue === "assets" && !path.includes("/assets/")) return false;
+            return true;
+          });
+
+          filtered.forEach(path => {
+            const row = document.createElement("tr");
+
+            // Checkbox column
+            const selectCell = document.createElement("td");
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.value = path;
+            selectCell.appendChild(checkbox);
+
+            const nameCell = document.createElement("td");
+            nameCell.textContent = path;
+
+            const linkCell = document.createElement("td");
+            const link = document.createElement("a");
+            link.href = `https://huggingface.co/datasets/${repoId}/resolve/main/${path}?download=true`;
+            link.target = "_blank";
+            link.setAttribute("download", "");
+            link.title = "Download file";
+            link.innerHTML = `<i class="fas fa-download" style="color:#39c;"></i>`;
+            linkCell.appendChild(link);
+
+            row.appendChild(selectCell);
+            row.appendChild(nameCell);
+            row.appendChild(linkCell);
+            tbody.appendChild(row);
+          });
+          document.getElementById("selectAllBtn").textContent = "Select All";
+          allSelected = false;
+        }
+
+      
+        async function downloadSelected() {
+          console.log("download button clicked")
+          const checkboxes = document.querySelectorAll('#fileTable tbody input[type="checkbox"]:checked');
+          if (checkboxes.length === 0) {
+            alert("Please select at least one file.");
+            return;
+          }
+
+          const zip = new JSZip();
+
+          for (const checkbox of checkboxes) {
+            const filePath = checkbox.value;
+            const url = `https://huggingface.co/datasets/${repoId}/resolve/main/${filePath}`;
+
+            try {
+              const response = await fetch(url);
+              const blob = await response.blob();
+              const filename = filePath.split('/').slice(1).join('/'); // remove root folder in zip
+
+              zip.file(filename, blob);
+            } catch (err) {
+              console.error(`Failed to fetch ${filePath}`, err);
+            }
+          }
+
+          const zipBlob = await zip.generateAsync({ type: "blob" });
+          const zipUrl = URL.createObjectURL(zipBlob);
+          const a = document.createElement("a");
+          a.href = zipUrl;
+          a.download = "selected_files.zip";
+          a.click();
+          URL.revokeObjectURL(zipUrl);
+        }
+
+        let allSelected = false;
+
+        function toggleSelectAll() {
+          const checkboxes = document.querySelectorAll('#fileTable tbody input[type="checkbox"]');
+          allSelected = !allSelected;
+
+          checkboxes.forEach(cb => cb.checked = allSelected);
+
+          const btn = document.getElementById("selectAllBtn");
+          btn.textContent = allSelected ? "Deselect All" : "Select All";
+        }
+
+        document.getElementById("weekFilter").addEventListener("change", renderTable);
+        document.getElementById("typeFilter").addEventListener("change", renderTable);
+      
+        loadAndRender();
+      </script>
+
+
       <h2>Citation</h2>
-      <p>If you use this dataset in your research, please cite our paper (bibtex entry will be added upon publication).
-      </p>
+      <pre><code>@inproceedings{ardannaoui_2025_icp_analysis,
+  title={When and Where Localization Fails: An Analysis of the Iterative Closest Point in Evolving Environments},
+  author={Dannaoui, Abdelraouf and Laconte, Johann and Debain, Christophe and Pomerleau, Fran{\c{c}}ois and Checchin, Paul},
+  booktitle={2025 European Conference on Mobile Robots (ECMR)},
+  year={2025},
+  organization={IEEE},
+  note={Accepted for publication}
+}</code></pre>
+
 
       <h2>License</h2>
       <p>Data will be released under a permissive academic license (TBD).</p>
@@ -143,19 +406,20 @@
         For questions or collaboration inquiries, please contact: <br><br>
         Abdel-Raouf Dannaoui <br>
         Ph.D. Candidate in Robotics -- INRAE <br>
-        <a href="mailto:dannaoui.abdelraouf@gmail.com">dannaoui.abdelraouf@gmail.com</a>
+        <a href="mailto:dannaoui.abdelraouf@gmai.com">dannaoui.abdelraouf@gmai.com</a>
       </p>
     </section>
 
     <footer>
       <p>This project is maintained by
-        <a href="https://github.com/RaoufDannaoui1">Abdel-Raouf Dannaoui</a> - PhD Candidate in Computer Vision and
+        <a href="https://github.com/RaoufDannaoui1" target="_blank">Abdel-Raouf Dannaoui</a> - PhD Candidate in Computer Vision and
         Robotics
       </p>
-      <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small>
+      <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist" target="_blank">orderedlist</a></small>
       </p>
     </footer>
   </div>
   <script src="javascripts/scale.fix.js"></script>
 </body>
+
 </html>
