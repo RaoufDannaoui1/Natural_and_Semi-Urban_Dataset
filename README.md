@@ -38,9 +38,19 @@ Each weekly session contains:
 
 
 - **Contents:**
-  - **Colorized & classified point clouds** (per semantic class: ground, vegetation, vehicles, etc.)
-  - **Panoramic images** with GNSS-tagged camera trajectory
-  - **GNSS/IMU trajectories** with full pose (position and orientation)
+  - **Colorized & classified point clouds**  
+    - Provided per semantic class (ground, vegetation, vehicles, etc.)  
+    - ~100 million points for a Semi-Urban map and ~150 million points for a Natural map
+    - Average size: ~4 GB for a Semi-Urban map and ~5.5 GB for a Natural map (LAS format files)  
+  - **Panoramic images**  
+    - 360° images captured every 3 meters along each track  
+    - ~350 images per track (per direction)  
+    - Resolution: 7040 × 3520 pixels  
+    - Average size: ~2–3 MB per image (JPEG)  
+    - Includes GNSS-tagged camera trajectory
+  - **GNSS/IMU trajectories**  
+    - Provides full pose: position (x, y, z) and orientation (quaternion: qw, qx, qy, qz)  
+
 
 
 ## Applications
