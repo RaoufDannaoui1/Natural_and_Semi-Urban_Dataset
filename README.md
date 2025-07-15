@@ -1,7 +1,7 @@
 # Natural and Semi-Urban  Dataset
 **Weekly Multi-Temporal Dataset for Short-Term Localization and Environmental Change Analysis**
 
-Dataset website: [raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset/](https://raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset/)
+Dataset website: <a href="https://raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset/" target="_blank">raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset/</a>
  
 
 ## Overview
