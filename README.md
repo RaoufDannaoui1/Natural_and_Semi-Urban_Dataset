@@ -74,7 +74,17 @@ Tracks are spatially aligned using Leica’s post-processing software with cloud
 The full dataset files (point clouds, images, and trajectories) is publicly available directly on [Hugging Face](https://huggingface.co/datasets/ardannaoui/Natural_and_SemiUrban_Dataset/tree/main), or via [raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset](https://raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset/) for selective download.
 
 ## Citation
-If you use this dataset in your research, please cite our paper (bibtex entry will be added upon publication). 
+If you use this dataset in your research, please cite our paper.
+```plaintext
+ @inproceedings{ardannaoui_2025_icp_analysis,
+   title={When and Where Localization Fails: An Analysis of the Iterative Closest Point in Evolving Environments},
+   author={Dannaoui, Abdelraouf and Laconte, Johann and Debain, Christophe and Pomerleau, Fran{\c{c}}ois and Checchin, Paul},
+   booktitle={2025 European Conference on Mobile Robots (ECMR)},
+   year={2025},
+   organization={IEEE},
+   note={Accepted for publication}
+ }
+```
 
 
 ## Contact
