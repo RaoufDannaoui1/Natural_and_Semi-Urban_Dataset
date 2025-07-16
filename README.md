@@ -72,7 +72,8 @@ Tracks are spatially aligned using Leica’s post-processing software with cloud
 
 
 ## Data Availability
-The full dataset files (point clouds, images, and trajectories) is publicly available directly on [Hugging Face](https://huggingface.co/datasets/ardannaoui/Natural_and_Semi-Urban_Dataset/tree/main), or via [raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset](https://raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset/) for selective download.
+The full dataset files (point clouds, images, and trajectories) will be available soon.
+<!-- is publicly available directly on [Hugging Face](https://huggingface.co/datasets/ardannaoui/Natural_and_Semi-Urban_Dataset/tree/main), or via [raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset](https://raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset/) for selective download. -->
 
 ## Citation
 If you use this dataset in your research, please cite our paper (bibtex entry will be added upon publication). 
