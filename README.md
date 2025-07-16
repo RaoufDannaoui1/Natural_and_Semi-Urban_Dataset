@@ -3,6 +3,7 @@
 
 Dataset website: <a href="https://raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset/" target="_blank">raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset/</a>
  
+<img src="/images/header.png" alt="evolving environment" style="width:100%;">
 
 ## Overview
 The dataset is a short-term, high-resolution, multi-modal dataset focused on understanding how real-world changes—such as vegetation growth, trimming, and object displacement—affect 3D LiDAR-based localization in dynamic outdoor environments. The data was collected weekly from **February to April 2025**, across two contrasting outdoor scenarios:
@@ -18,8 +19,10 @@ Each weekly session contains:
 
 - **Two Environments:**
   - **Track 1-2 (bidirectional):** Semi-urban university campus (~850m)
+  <img style="width:500px" src="images/natural_traj_cloud.png" alt="Natural environment ">
+  
   - **Track 3-4 (bidirectional):** Natural forest path (~680m)
-
+  <img style="width:500px" src="images/semiurban_traj_cloud.png" alt="Semi-Urban environment">
 
 - **Data Structure (per week):**
     ```plaintext
@@ -50,7 +53,9 @@ Each weekly session contains:
   - **GNSS/IMU trajectories**  
     - Provides full pose: position (x, y, z) and orientation (quaternion: qw, qx, qy, qz)  
 
-
+<div style="text-align:center">
+  <img style="width:500px" src="images/pc_overview.png" alt="Leica Pegasus TRK100 mounted on a Zoe electric vehicle">
+</div>
 
 ## Applications
 This dataset supports research in:
@@ -67,7 +72,9 @@ All data is recorded using a **Leica Pegasus TRK100** mounted on a **Zoe electri
 - 360° panoramic camera  
 - GNSS and IMU for centimeter-level pose accuracy  
 
-Tracks are spatially aligned using Leica’s post-processing software with cloud-to-cloud registration.
+<div style="text-align:center">
+ <img style="width:500px" src="images/zoe_leica.jpeg" alt="Leica Pegasus TRK100 mounted on a Zoe electric vehicle">
+</div>
 
 
 ## Data Availability
