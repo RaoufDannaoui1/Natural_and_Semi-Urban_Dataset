@@ -44,7 +44,6 @@ Each weekly session contains:
     - Average size: ~4 GB for a Semi-Urban map and ~5.5 GB for a Natural map (LAS format files)  
   - **Panoramic images**  
     - 360° images captured every 3 meters along each track  
-    - ~350 images per track (per direction)  
     - Resolution: 7040 × 3520 pixels  
     - Average size: ~2–3 MB per image (JPEG)  
     - Includes GNSS-tagged camera trajectory
@@ -72,8 +71,7 @@ Tracks are spatially aligned using Leica’s post-processing software with cloud
 
 
 ## Data Availability
-The full dataset files (point clouds, images, and trajectories) will be available soon.
-<!-- is publicly available directly on [Hugging Face](https://huggingface.co/datasets/ardannaoui/Natural_and_Semi-Urban_Dataset/tree/main), or via [raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset](https://raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset/) for selective download. -->
+The full dataset files (point clouds, images, and trajectories) is publicly available directly on [Hugging Face](https://huggingface.co/datasets/ardannaoui/Natural_and_SemiUrban_Dataset/tree/main), or via [raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset](https://raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset/) for selective download.
 
 ## Citation
 If you use this dataset in your research, please cite our paper (bibtex entry will be added upon publication). 
