@@ -109,10 +109,10 @@
       │   └── track_trajectories/
       ├── images_360/
       │   ├── SemiUrban_track1-2/
-      │   └── Urban_track3-4/
+      │   └── Natural_track3-4/
       └── point_clouds/
           ├── SemiUrban_track1-2/
-          └── Urban_track3-4/</code></pre>
+          └── Natural_track3-4/</code></pre>
 
       <style>
         table {
@@ -192,6 +192,10 @@
           100% { transform: rotate(360deg); }
         }
 
+        #envFilterContainer {
+          display: none; /* Hidden by default */
+        }
+
       </style>
 
 
@@ -210,13 +214,21 @@
           <label for="typeFilter">Data Type:</label>
           <select id="typeFilter">
             <option value="all">All Types</option>
+            <option value="assets" selected>Assets</option>
             <option value="images_360">Images 360</option>
             <option value="point_clouds">Point Clouds</option>
-            <option value="assets">Assets</option>
           </select>
+
+          <div id="envFilterContainer" style="display: none;">
+            <label for="envFilter">Environment:</label>
+            <select id="envFilter">
+              <option value="all">All Environments</option>
+              <option value="Natural">Natural</option>
+              <option value="SemiUrban">Semi-Urban</option>
+            </select>
+          </div>
   
           <button class="downloadButton" onclick="downloadSelected()">Download Selected as ZIP</button>
-          
         </div>
         
         <table id="fileTable">
@@ -284,20 +296,35 @@
             option.value = week;
             option.textContent = week;
             weekFilter.appendChild(option);
+            if (option.value == "week00_1400-10-02-2025"){
+              option.setAttribute("selected", "")
+            }
           });
         }
       
         function renderTable() {
           const weekValue = document.getElementById("weekFilter").value;
           const typeValue = document.getElementById("typeFilter").value;
+          const envValue = document.getElementById("envFilter").value;
           const tbody = document.querySelector("#fileTable tbody");
           tbody.innerHTML = "";
 
           const filtered = allFiles.filter(path => {
             if (weekValue !== "all" && !path.startsWith(weekValue)) return false;
-            if (typeValue === "images_360" && !path.includes("/images_360/")) return false;
-            if (typeValue === "point_clouds" && !path.includes("/point_clouds/")) return false;
-            if (typeValue === "assets" && !path.includes("/assets/")) return false;
+
+            if (typeValue !== "all") {
+              if (typeValue === "images_360" && !path.includes("/images_360/")) return false;
+              if (typeValue === "point_clouds" && !path.includes("/point_clouds/")) return false;
+              if (typeValue === "assets" && !path.includes("/assets/")) return false;
+            }
+            
+            // Apply environment filter only for point clouds and images
+            if (envValue !== "all" && 
+                (typeValue === "point_clouds" || typeValue === "images_360")) {
+              const envPattern = envValue === "Natural" ? "Natural_track" : "SemiUrban_track";
+              if (!path.includes(envPattern)) return false;
+            }
+            
             return true;
           });
 
@@ -332,39 +359,153 @@
           allSelected = false;
         }
 
+        // Update filter visibility based on data type
+        function updateFilterVisibility() {
+          const typeValue = document.getElementById("typeFilter").value;
+          const envFilterContainer = document.getElementById("envFilterContainer");
+          
+          if (typeValue === "point_clouds" || typeValue === "images_360") {
+            envFilterContainer.style.display = "block";
+          } else {
+            envFilterContainer.style.display = "none";
+          }
+        }
+
+        
       
         async function downloadSelected() {
-          console.log("download button clicked")
           const checkboxes = document.querySelectorAll('#fileTable tbody input[type="checkbox"]:checked');
           if (checkboxes.length === 0) {
             alert("Please select at least one file.");
             return;
           }
 
-          const zip = new JSZip();
-
-          for (const checkbox of checkboxes) {
-            const filePath = checkbox.value;
-            const url = `https://huggingface.co/datasets/${repoId}/resolve/main/${filePath}`;
-
-            try {
-              const response = await fetch(url);
-              const blob = await response.blob();
-              const filename = filePath.split('/').slice(1).join('/'); // remove root folder in zip
-
-              zip.file(filename, blob);
-            } catch (err) {
-              console.error(`Failed to fetch ${filePath}`, err);
+          // Create progress modal
+          const modal = document.createElement("div");
+          modal.id = "downloadModal";
+          modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+          `;
+          
+          const modalContent = document.createElement("div");
+          modalContent.style.cssText = `
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            max-width: 90%;
+            text-align: center;
+          `;
+          
+          modalContent.innerHTML = `
+            <h3>Preparing Download</h3>
+            <p>Downloading ${checkboxes.length} files...</p>
+            <div id="progressBar" style="height: 20px; background: #f0f0f0; border-radius: 10px; margin: 20px 0;">
+              <div id="progressFill" style="height: 100%; width: 0%; background: #39c; border-radius: 10px; transition: width 0.3s;"></div>
+            </div>
+            <p>Status: <span id="statusText">Starting download...</span></p>
+            <p>Files processed: <span id="fileCounter">0</span>/<span id="totalFiles">${checkboxes.length}</span></p>
+            <button id="cancelButton" style="margin-top: 15px; padding: 8px 20px; background: #b70d00; color: white; border: none; border-radius: 5px; cursor: pointer;">Cancel</button>
+          `;
+          
+          modal.appendChild(modalContent);
+          document.body.appendChild(modal);
+          
+          // Add cancel functionality
+          let downloadCancelled = false;
+          document.getElementById("cancelButton").addEventListener("click", () => {
+            downloadCancelled = true;
+            document.getElementById("statusText").textContent = "Cancelling...";
+          });
+          
+          try {
+            const zip = new JSZip();
+            const totalFiles = checkboxes.length;
+            let processedFiles = 0;
+            
+            // Update progress elements
+            const updateProgress = () => {
+              const percent = Math.round((processedFiles / totalFiles) * 100);
+              document.getElementById("progressFill").style.width = `${percent}%`;
+              document.getElementById("fileCounter").textContent = processedFiles;
+              document.getElementById("statusText").textContent = 
+                `Downloading file ${processedFiles + 1} of ${totalFiles}`;
+            };
+            
+            updateProgress();
+            
+            for (const checkbox of checkboxes) {
+              if (downloadCancelled) break;
+              
+              const filePath = checkbox.value;
+              const url = `https://huggingface.co/datasets/${repoId}/resolve/main/${filePath}`;
+              document.getElementById("statusText").textContent = `Downloading: ${filePath.split('/').pop()}`;
+              
+              try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const blob = await response.blob();
+                if (downloadCancelled) break;
+                
+                const filename = filePath.split('/').slice(1).join('/');
+                zip.file(filename, blob);
+                
+                processedFiles++;
+                updateProgress();
+              } catch (err) {
+                console.error(`Failed to fetch ${filePath}`, err);
+                document.getElementById("statusText").textContent = `Error: ${filePath.split('/').pop()} - ${err.message}`;
+              }
             }
+            
+            if (downloadCancelled) {
+              document.getElementById("statusText").textContent = "Download cancelled";
+              setTimeout(() => modal.remove(), 2000);
+              return;
+            }
+            
+            document.getElementById("statusText").textContent = "Compressing files...";
+            
+            const zipBlob = await zip.generateAsync({ 
+              type: "blob",
+              compression: "DEFLATE",
+              compressionOptions: { level: 6 }
+            }, metadata => {
+              document.getElementById("statusText").textContent = 
+                `Compressing: ${Math.round(metadata.percent)}% complete`;
+            });
+            
+            if (downloadCancelled) {
+              document.getElementById("statusText").textContent = "Download cancelled";
+              setTimeout(() => modal.remove(), 2000);
+              return;
+            }
+            
+            document.getElementById("statusText").textContent = "Finalizing download...";
+            const zipUrl = URL.createObjectURL(zipBlob);
+            const a = document.createElement("a");
+            a.href = zipUrl;
+            a.download = "selected_files.zip";
+            a.click();
+            URL.revokeObjectURL(zipUrl);
+            
+            document.getElementById("statusText").textContent = "Download complete!";
+            setTimeout(() => modal.remove(), 2000);
+          } catch (err) {
+            console.error("Download failed:", err);
+            document.getElementById("statusText").textContent = `Error: ${err.message}`;
+            document.getElementById("cancelButton").textContent = "Close";
           }
-
-          const zipBlob = await zip.generateAsync({ type: "blob" });
-          const zipUrl = URL.createObjectURL(zipBlob);
-          const a = document.createElement("a");
-          a.href = zipUrl;
-          a.download = "selected_files.zip";
-          a.click();
-          URL.revokeObjectURL(zipUrl);
         }
 
         let allSelected = false;
@@ -380,8 +521,12 @@
         }
 
         document.getElementById("weekFilter").addEventListener("change", renderTable);
-        document.getElementById("typeFilter").addEventListener("change", renderTable);
-      
+        document.getElementById("typeFilter").addEventListener("change", function() {
+          updateFilterVisibility();
+          renderTable();
+        });
+        document.getElementById("envFilter").addEventListener("change", renderTable);
+
         loadAndRender();
       </script>
 
