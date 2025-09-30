@@ -1,6 +1,8 @@
 # Natural and Semi-Urban  Dataset
 **Weekly Multi-Temporal Dataset for Short-Term Localization and Environmental Change Analysis**
 
+Article accepted in European Conference on Mobile Robots <a href="https://ecmr2025.dei.unipd.it/">(ECMR 2025)</a> and published in <a href="https://ieeexplore.ieee.org/document/11162975" target="_blank">IEEE</a>, don't forget to cite us ;p
+
 Dataset website: <a href="https://raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset/" target="_blank">raoufdannaoui1.github.io/Natural_and_Semi-Urban_Dataset/</a>
  
 <img src="/images/header.png" alt="evolving environment" style="width:100%;">
@@ -83,14 +85,17 @@ The full dataset files (point clouds, images, and trajectories) is publicly avai
 ## Citation
 If you use this dataset in your research, please cite our paper.
 ```plaintext
- @inproceedings{ardannaoui_2025_icp_analysis,
-   title={When and Where Localization Fails: An Analysis of the Iterative Closest Point in Evolving Environments},
-   author={Dannaoui, Abdelraouf and Laconte, Johann and Debain, Christophe and Pomerleau, Fran{\c{c}}ois and Checchin, Paul},
-   booktitle={2025 European Conference on Mobile Robots (ECMR)},
-   year={2025},
-   organization={IEEE},
-   note={Accepted for publication}
- }
+@INPROCEEDINGS{ardannaoui_2025_icp_analysis,
+  author={Dannaoui, Abdel-Raouf and Laconte, Johann and Debain, Christophe and Pomerleau, Francois and Checchin, Paul},
+  booktitle={2025 European Conference on Mobile Robots (ECMR)}, 
+  title={When and Where Localization Fails: An Analysis of the Iterative Closest Point in Evolving Environment}, 
+  year={2025},
+  volume={},
+  number={},
+  pages={1-7},
+  keywords={Location awareness;Point cloud compression;Geometry;Accuracy;Laser radar;Translation;Three-dimensional displays;Vegetation mapping;Trajectory;Iterative methods},
+  doi={10.1109/ECMR65884.2025.11162975}
+}
 ```
 
 
