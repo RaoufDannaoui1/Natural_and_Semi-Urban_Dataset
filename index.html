@@ -107,9 +107,11 @@
       <pre><code>weekXX_hhmm-DD-MM-YYYY/
       ├── assets/
       │   └── track_trajectories/
+      │
       ├── images_360/
       │   ├── SemiUrban_track1-2/
       │   └── Natural_track3-4/
+      │
       └── point_clouds/
           ├── SemiUrban_track1-2/
           └── Natural_track3-4/</code></pre>
@@ -132,18 +134,12 @@
         tr td:nth-child(3) {
           text-align: center;
         }
-        
-        input[type="checkbox"] {
-          accent-color: #39c;
-          width: 18px;
-          height: 18px;
-          cursor: pointer;
-        }
 
-        .filters-container{
+        .filters-container {
           display: flex;
           flex-direction: column;
         }
+
         select {
           padding: 5px;
           margin-bottom: 10px;
@@ -152,7 +148,8 @@
           background-color: #8bd8ff;
           transition: border-color 0.3s ease;
         }
-        .downloadButton{
+
+        .commandButton {
           padding: 5px;
           margin-top: 25px;
           border: 1px solid #ccc;
@@ -161,23 +158,13 @@
           color: #fff;
           font-weight: bold;
         }
-        .downloadButton:hover{
+
+        .commandButton:hover {
           background-color: #187a34;
           transition: 0.3s;
           cursor: pointer;
         }
-        #selectAllBtn{
-          padding: 5px;
-          border: 1px solid #ccc;
-          border-radius: 6px;
-          background-color: #8bd8ff;
-          cursor: pointer;
-        }
-        #selectAllBtn:hover{
-          background-color: #3cbeff;
-          transition: 0.3s;
-          cursor: pointer;
-        }
+
         .spinner {
           width: 40px;
           height: 40px;
@@ -187,13 +174,20 @@
           border-radius: 50%;
           animation: spin 1s linear infinite;
         }
+
         @keyframes spin {
-          0%   { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+          0% {
+            transform: rotate(0deg);
+          }
+
+          100% {
+            transform: rotate(360deg);
+          }
         }
 
         #envFilterContainer {
-          display: none; /* Hidden by default */
+          display: none;
+          /* Hidden by default */
         }
 
         .note {
@@ -203,8 +197,70 @@
           margin: 20px 0;
           border-radius: 5px;
         }
-      </style>
 
+        .command-modal {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.7);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+        }
+
+        .command-modal-content {
+          background: white;
+          padding: 30px;
+          border-radius: 10px;
+          width: 600px;
+          max-width: 90%;
+          max-height: 80vh;
+          overflow-y: auto;
+        }
+
+        .command-code {
+          background: #f5f5f5;
+          padding: 15px;
+          border-radius: 5px;
+          border: 1px solid #ddd;
+          font-family: monospace;
+          white-space: pre-wrap;
+          word-break: break-all;
+          margin: 15px 0;
+        }
+
+        .copy-button {
+          background: #39c;
+          color: white;
+          border: none;
+          padding: 8px 15px;
+          border-radius: 5px;
+          cursor: pointer;
+          margin-top: 10px;
+        }
+
+        .copy-button:hover {
+          background: #2a8bb8;
+        }
+
+        .close-button {
+          background: #6c757d;
+          color: white;
+          border: none;
+          padding: 8px 15px;
+          border-radius: 5px;
+          cursor: pointer;
+          margin-top: 10px;
+          margin-left: 10px;
+        }
+
+        .close-button:hover {
+          background: #545b62;
+        }
+      </style>
 
       <h2>Browse Dataset Files</h2>
       <div id="loadingMessage" style="text-align: center; margin: 40px;">
@@ -234,70 +290,107 @@
               <option value="SemiUrban">Semi-Urban</option>
             </select>
           </div>
-  
-          <button class="downloadButton" onclick="downloadSelected()">Download Selected as ZIP</button>
+
+          <button class="commandButton" onclick="generateDownloadCommand()">Generate Download Command</button>
         </div>
-        
+
         <table id="fileTable">
           <thead>
             <tr>
-              <th style="min-width: 85px; text-align: center;"><button id="selectAllBtn" onclick="toggleSelectAll()">Select All</button></th>
-              <th>Files</th>
               <th style="text-align: center;">Download</th>
+              <th>File Path</th>
             </tr>
-          </thead>        
+          </thead>
           <tbody></tbody>
         </table>
       </div>
 
-      
-
       <script>
         const repoId = "ardannaoui/Natural_and_SemiUrban_Dataset";
         const baseApiUrl = `https://huggingface.co/api/datasets/${repoId}/tree/main`;
-      
+
         let allFiles = [];
-      
+
         async function fetchTree(path = "") {
           const url = `${baseApiUrl}/${path}`.replace(/\/+$/, "");
-          const res = await fetch(url);
-          const items = await res.json();
-      
-          for (const item of items) {
-            if (item.type === "file") {
-              allFiles.push(item.path);
-            } else if (item.type === "directory") {
-              await fetchTree(item.path); // Recursive call for folders
+          try {
+            const res = await fetch(url);
+
+            // Check if we hit rate limit
+            if (res.status === 429) {
+              throw new Error("Rate limit exceeded. Please try again later.");
             }
+
+            if (!res.ok) {
+              throw new Error(`HTTP error! status: ${res.status}`);
+            }
+
+            const items = await res.json();
+
+            // Check if items is iterable
+            if (!items || typeof items[Symbol.iterator] !== 'function') {
+              throw new Error("Invalid response format from server");
+            }
+
+            for (const item of items) {
+              if (item.type === "file") {
+                allFiles.push(item.path);
+              } else if (item.type === "directory") {
+                await fetchTree(item.path);
+              }
+            }
+          } catch (err) {
+            console.error("Error fetching tree:", err);
+            throw err; // Re-throw to handle in loadAndRender
           }
         }
-      
+
         async function loadAndRender() {
           try {
-            await fetchTree(); // Start from root
+            await fetchTree();
             populateFilters();
             renderTable();
 
-            // Hide loading, show content
             document.getElementById("loadingMessage").style.display = "none";
             document.getElementById("mainContent").style.display = "block";
           } catch (err) {
-            document.getElementById("loadingMessage").textContent = "Failed to load dataset.";
+            const loadingMessage = document.getElementById("loadingMessage");
+            loadingMessage.innerHTML = `
+        <div style="color: #d00; text-align: center;">
+          <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px;"></i>
+          <h3>Failed to load dataset</h3>
+          <p>Error: ${err.message}</p>
+          <p style="font-size: 0.9em; margin-top: 20px;">
+            This may be due to rate limiting. You can still use the download command generator below.
+          </p>
+        </div>
+        `;
             console.error("Loading error:", err);
+
+            // Still show the main content so users can generate commands
+            document.getElementById("mainContent").style.display = "block";
           }
         }
-      
+
         function populateFilters() {
           const weekFilter = document.getElementById("weekFilter");
           const weeks = new Set();
-      
-          allFiles.forEach(path => {
-            const parts = path.split('/');
-            if (parts[0].startsWith("week")) {
-              weeks.add(parts[0]);
-            }
-          });
-      
+
+          // If we have files, populate from them, otherwise use default weeks
+          if (allFiles.length > 0) {
+            allFiles.forEach(path => {
+              const parts = path.split('/');
+              if (parts[0].startsWith("week")) {
+                weeks.add(parts[0]);
+              }
+            });
+          } else {
+            // Fallback: add some default weeks
+            ['week00_1400-10-02-2025', 'week01_1400-17-02-2025', 'week02_1400-24-02-2025'].forEach(week => {
+              weeks.add(week);
+            });
+          }
+
           [...weeks].sort().forEach(week => {
             const option = document.createElement("option");
             option.value = week;
@@ -308,13 +401,30 @@
             }
           });
         }
-      
+
         function renderTable() {
           const weekValue = document.getElementById("weekFilter").value;
           const typeValue = document.getElementById("typeFilter").value;
           const envValue = document.getElementById("envFilter").value;
           const tbody = document.querySelector("#fileTable tbody");
           tbody.innerHTML = "";
+
+          // If no files loaded, show informative message
+          if (allFiles.length === 0) {
+            const row = document.createElement("tr");
+            const cell = document.createElement("td");
+            cell.colSpan = 3;
+            cell.style.textAlign = "center";
+            cell.style.padding = "40px";
+            cell.innerHTML = `
+        <i class="fas fa-info-circle" style="font-size: 24px; color: #39c; margin-bottom: 10px;"></i>
+        <p>File list could not be loaded due to API limits.</p>
+        <p>Use the "Generate Download Command" button above to get CLI commands for downloading.</p>
+        `;
+            row.appendChild(cell);
+            tbody.appendChild(row);
+            return;
+          }
 
           const filtered = allFiles.filter(path => {
             if (weekValue !== "all" && !path.startsWith(weekValue)) return false;
@@ -324,53 +434,54 @@
               if (typeValue === "point_clouds" && !path.includes("/point_clouds/")) return false;
               if (typeValue === "assets" && !path.includes("/assets/")) return false;
             }
-            
-            // Apply environment filter only for point clouds and images
-            if (envValue !== "all" && 
-                (typeValue === "point_clouds" || typeValue === "images_360")) {
+
+            if (envValue !== "all" &&
+              (typeValue === "point_clouds" || typeValue === "images_360")) {
               const envPattern = envValue === "Natural" ? "Natural_track" : "SemiUrban_track";
               if (!path.includes(envPattern)) return false;
             }
-            
+
             return true;
           });
+
+          if (filtered.length === 0) {
+            const row = document.createElement("tr");
+            const cell = document.createElement("td");
+            cell.colSpan = 3;
+            cell.style.textAlign = "center";
+            cell.style.padding = "20px";
+            cell.textContent = "No files match the current filters.";
+            row.appendChild(cell);
+            tbody.appendChild(row);
+            return;
+          }
 
           filtered.forEach(path => {
             const row = document.createElement("tr");
 
-            // Checkbox column
-            const selectCell = document.createElement("td");
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.value = path;
-            selectCell.appendChild(checkbox);
+            const downloadCell = document.createElement("td");
+            const downloadLink = document.createElement("a");
+            downloadLink.href = `https://huggingface.co/datasets/${repoId}/resolve/main/${path}?download=true`;
+            downloadLink.target = "_blank";
+            downloadLink.setAttribute("download", "");
+            downloadLink.title = "Download file";
+            downloadLink.innerHTML = `<i class="fas fa-download" style="color:#39c;"></i>`;
+            downloadCell.appendChild(downloadLink);
 
             const nameCell = document.createElement("td");
             nameCell.textContent = path;
 
-            const linkCell = document.createElement("td");
-            const link = document.createElement("a");
-            link.href = `https://huggingface.co/datasets/${repoId}/resolve/main/${path}?download=true`;
-            link.target = "_blank";
-            link.setAttribute("download", "");
-            link.title = "Download file";
-            link.innerHTML = `<i class="fas fa-download" style="color:#39c;"></i>`;
-            linkCell.appendChild(link);
 
-            row.appendChild(selectCell);
+            row.appendChild(downloadCell);
             row.appendChild(nameCell);
-            row.appendChild(linkCell);
             tbody.appendChild(row);
           });
-          document.getElementById("selectAllBtn").textContent = "Select All";
-          allSelected = false;
         }
 
-        // Update filter visibility based on data type
         function updateFilterVisibility() {
           const typeValue = document.getElementById("typeFilter").value;
           const envFilterContainer = document.getElementById("envFilterContainer");
-          
+
           if (typeValue === "point_clouds" || typeValue === "images_360") {
             envFilterContainer.style.display = "block";
           } else {
@@ -378,157 +489,80 @@
           }
         }
 
-        
-      
-        async function downloadSelected() {
-          const checkboxes = document.querySelectorAll('#fileTable tbody input[type="checkbox"]:checked');
-          if (checkboxes.length === 0) {
-            alert("Please select at least one file.");
-            return;
+        function generateDownloadCommand() {
+          const weekValue = document.getElementById("weekFilter").value;
+          const typeValue = document.getElementById("typeFilter").value;
+          const envValue = document.getElementById("envFilter").value;
+
+          let includePattern = "";
+
+          if (weekValue !== "all") {
+            includePattern += `${weekValue}*/`;
+          } else {
+            includePattern += "*/";
           }
 
-          // Create progress modal
-          const modal = document.createElement("div");
-          modal.id = "downloadModal";
-          modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-          `;
-          
-          const modalContent = document.createElement("div");
-          modalContent.style.cssText = `
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            width: 400px;
-            max-width: 90%;
-            text-align: center;
-          `;
-          
-          modalContent.innerHTML = `
-            <h3>Preparing Download</h3>
-            <p>Downloading ${checkboxes.length} files...</p>
-            <div id="progressBar" style="height: 20px; background: #f0f0f0; border-radius: 10px; margin: 20px 0;">
-              <div id="progressFill" style="height: 100%; width: 0%; background: #39c; border-radius: 10px; transition: width 0.3s;"></div>
-            </div>
-            <p>Status: <span id="statusText">Starting download...</span></p>
-            <p>Files processed: <span id="fileCounter">0</span>/<span id="totalFiles">${checkboxes.length}</span></p>
-            <button id="cancelButton" style="margin-top: 15px; padding: 8px 20px; background: #b70d00; color: white; border: none; border-radius: 5px; cursor: pointer;">Cancel</button>
-          `;
-          
-          modal.appendChild(modalContent);
-          document.body.appendChild(modal);
-          
-          // Add cancel functionality
-          let downloadCancelled = false;
-          document.getElementById("cancelButton").addEventListener("click", () => {
-            downloadCancelled = true;
-            document.getElementById("statusText").textContent = "Cancelling...";
-          });
-          
-          try {
-            const zip = new JSZip();
-            const totalFiles = checkboxes.length;
-            let processedFiles = 0;
-            
-            // Update progress elements
-            const updateProgress = () => {
-              const percent = Math.round((processedFiles / totalFiles) * 100);
-              document.getElementById("progressFill").style.width = `${percent}%`;
-              document.getElementById("fileCounter").textContent = processedFiles;
-              document.getElementById("statusText").textContent = 
-                `Downloading file ${processedFiles + 1} of ${totalFiles}`;
-            };
-            
-            updateProgress();
-            
-            for (const checkbox of checkboxes) {
-              if (downloadCancelled) break;
-              
-              const filePath = checkbox.value;
-              const url = `https://huggingface.co/datasets/${repoId}/resolve/main/${filePath}`;
-              document.getElementById("statusText").textContent = `Downloading: ${filePath.split('/').pop()}`;
-              
-              try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
-                const blob = await response.blob();
-                if (downloadCancelled) break;
-                
-                const filename = filePath.split('/').slice(1).join('/');
-                zip.file(filename, blob);
-                
-                processedFiles++;
-                updateProgress();
-              } catch (err) {
-                console.error(`Failed to fetch ${filePath}`, err);
-                document.getElementById("statusText").textContent = `Error: ${filePath.split('/').pop()} - ${err.message}`;
-              }
-            }
-            
-            if (downloadCancelled) {
-              document.getElementById("statusText").textContent = "Download cancelled";
-              setTimeout(() => modal.remove(), 2000);
-              return;
-            }
-            
-            document.getElementById("statusText").textContent = "Compressing files...";
-            
-            const zipBlob = await zip.generateAsync({ 
-              type: "blob",
-              compression: "DEFLATE",
-              compressionOptions: { level: 6 }
-            }, metadata => {
-              document.getElementById("statusText").textContent = 
-                `Compressing: ${Math.round(metadata.percent)}% complete`;
-            });
-            
-            if (downloadCancelled) {
-              document.getElementById("statusText").textContent = "Download cancelled";
-              setTimeout(() => modal.remove(), 2000);
-              return;
-            }
-            
-            document.getElementById("statusText").textContent = "Finalizing download...";
-            const zipUrl = URL.createObjectURL(zipBlob);
-            const a = document.createElement("a");
-            a.href = zipUrl;
-            a.download = "selected_files.zip";
-            a.click();
-            URL.revokeObjectURL(zipUrl);
-            
-            document.getElementById("statusText").textContent = "Download complete!";
-            setTimeout(() => modal.remove(), 2000);
-          } catch (err) {
-            console.error("Download failed:", err);
-            document.getElementById("statusText").textContent = `Error: ${err.message}`;
-            document.getElementById("cancelButton").textContent = "Close";
+          if (typeValue !== "all") {
+            includePattern += `${typeValue}/`;
+          } else {
+            includePattern += "*/";
           }
+
+          if (envValue !== "all" && (typeValue === "point_clouds" || typeValue === "images_360")) {
+            includePattern += `${envValue}_track*/**`;
+          } else if (typeValue !== "all") {
+            includePattern += "**";
+          } else {
+            includePattern += "*/**";
+          }
+
+          const command = `huggingface-cli download ardannaoui/Natural_and_SemiUrban_Dataset \\
+        --repo-type dataset \\
+        --include "${includePattern}" \\
+        --local-dir .`;
+
+          const modal = document.createElement("div");
+          modal.className = "command-modal";
+          modal.innerHTML = `
+        <div class="command-modal-content">
+          <h3>Download Command</h3>
+          <p>Use this command to download the selected data using the Hugging Face CLI:</p>
+          <div class="command-code">${command}</div>
+          <button class="copy-button" onclick="copyCommandToClipboard()">Copy Command</button>
+          <button class="close-button" onclick="this.closest('.command-modal').remove()">Close</button>
+          <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
+            <strong>Note:</strong> Make sure you have the Hugging Face CLI installed:<br>
+            <code>pip install huggingface_hub</code>
+          </p>
+        </div>
+        `;
+
+          document.body.appendChild(modal);
+          modal._command = command;
         }
 
-        let allSelected = false;
+        function copyCommandToClipboard() {
+          const modal = document.querySelector('.command-modal');
+          const command = modal._command;
 
-        function toggleSelectAll() {
-          const checkboxes = document.querySelectorAll('#fileTable tbody input[type="checkbox"]');
-          allSelected = !allSelected;
+          navigator.clipboard.writeText(command).then(() => {
+            const copyButton = document.querySelector('.copy-button');
+            const originalText = copyButton.textContent;
+            copyButton.textContent = 'Copied!';
+            copyButton.style.background = '#28a745';
 
-          checkboxes.forEach(cb => cb.checked = allSelected);
-
-          const btn = document.getElementById("selectAllBtn");
-          btn.textContent = allSelected ? "Deselect All" : "Select All";
+            setTimeout(() => {
+              copyButton.textContent = originalText;
+              copyButton.style.background = '#39c';
+            }, 2000);
+          }).catch(err => {
+            console.error('Failed to copy command: ', err);
+            alert('Failed to copy command to clipboard');
+          });
         }
 
         document.getElementById("weekFilter").addEventListener("change", renderTable);
-        document.getElementById("typeFilter").addEventListener("change", function() {
+        document.getElementById("typeFilter").addEventListener("change", function () {
           updateFilterVisibility();
           renderTable();
         });
@@ -538,7 +572,7 @@
       </script>
 
       <div class="note">
-        <div><strong>Note!</strong></div> 
+        <div><strong>Note!</strong></div>
         Due to a technical issue, data corresponding to weeks 11-13 will not be processed and will not be included in this dataset. Thank you for understanding.
       </div>
 
@@ -552,7 +586,6 @@
   organization={IEEE},
   note={Accepted for publication}
 }</code></pre>
-
 
       <h2>License</h2>
       <p>Data will be released under a permissive academic license (TBD).</p>
@@ -568,11 +601,9 @@
 
     <footer>
       <p>This project is maintained by
-        <a href="https://github.com/RaoufDannaoui1" target="_blank">Abdel-Raouf Dannaoui</a> - PhD Candidate in Computer Vision and
-        Robotics
+        <a href="https://github.com/RaoufDannaoui1" target="_blank">Abdel-Raouf Dannaoui</a> - PhD Candidate in Computer Vision and Robotics
       </p>
-      <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist" target="_blank">orderedlist</a></small>
-      </p>
+      <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist" target="_blank">orderedlist</a></small></p>
     </footer>
   </div>
   <script src="javascripts/scale.fix.js"></script>

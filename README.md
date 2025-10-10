@@ -29,16 +29,16 @@ Each weekly session contains:
 - **Data Structure (per week):**
     ```plaintext
     weekXX_hhmm-DD-MM-YYYY/
-    │── assets/
-    │   └── track_trajectories
+    ├── assets/
+    │   └── track_trajectories/
     │
-    │── images_360/
+    ├── images_360/
     │   ├── SemiUrban_track1-2/
-    │   └── Urban_track3-4/
+    │   └── Natural_track3-4/
     │
     └── point_clouds/
         ├── SemiUrban_track1-2/
-        └── Urban_track3-4/
+        └── Natural_track3-4/
     ```
 
 
