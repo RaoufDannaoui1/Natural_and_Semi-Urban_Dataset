@@ -310,6 +310,33 @@
         const baseApiUrl = `https://huggingface.co/api/datasets/${repoId}/tree/main`;
 
         let allFiles = [];
+        // Predefined weeks available immediately
+        const predefinedWeeks = ['week00_1400-10-02-2025', 'week01_0915-17-02-2025', 
+        'week02_0920-24-02-2025', 'week03_0900-03-03-2025', 'week04_0910-10-03-2025', 'week05_0910-17-03-2025', 
+        'week06_0900-24-03-2025', 'week07_0900-31-03-2025', 'week08_0900-07-04-2025', 'week09_0900-14-04-2025',];
+
+        // Load weeks immediately on page load
+        function loadInitialWeeks() {
+          const weekFilter = document.getElementById("weekFilter");
+          
+          // Clear existing options except "All Weeks"
+          while (weekFilter.children.length > 1) {
+            weekFilter.removeChild(weekFilter.lastChild);
+          }
+
+          // Add predefined weeks
+          predefinedWeeks.forEach(week => {
+            const option = document.createElement("option");
+            option.value = week;
+            option.textContent = week;
+            weekFilter.appendChild(option);
+          });
+
+          // Set default selection
+          if (predefinedWeeks.length > 0) {
+            weekFilter.value = predefinedWeeks[0];
+          }
+        }
 
         async function fetchTree(path = "") {
           const url = `${baseApiUrl}/${path}`.replace(/\/+$/, "");
@@ -341,65 +368,63 @@
             }
           } catch (err) {
             console.error("Error fetching tree:", err);
-            throw err; // Re-throw to handle in loadAndRender
+            throw err;
           }
         }
 
         async function loadAndRender() {
+          // Show weeks immediately
+          loadInitialWeeks();
+          renderTable();
+
+          // Hide loading and show content immediately
+          document.getElementById("loadingMessage").style.display = "none";
+          document.getElementById("mainContent").style.display = "block";
+
+          // Try to fetch actual files in background
           try {
             await fetchTree();
-            populateFilters();
+            // If successful, update filters with actual data
+            populateFiltersWithActualData();
             renderTable();
-
-            document.getElementById("loadingMessage").style.display = "none";
-            document.getElementById("mainContent").style.display = "block";
           } catch (err) {
-            const loadingMessage = document.getElementById("loadingMessage");
-            loadingMessage.innerHTML = `
-        <div style="color: #d00; text-align: center;">
-          <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px;"></i>
-          <h3>Failed to load dataset</h3>
-          <p>Error: ${err.message}</p>
-          <p style="font-size: 0.9em; margin-top: 20px;">
-            This may be due to rate limiting. You can still use the download command generator below.
-          </p>
-        </div>
-        `;
-            console.error("Loading error:", err);
-
-            // Still show the main content so users can generate commands
-            document.getElementById("mainContent").style.display = "block";
+            console.error("Background loading failed:", err);
+            // Keep using predefined weeks, no need to show error to user
           }
         }
 
-        function populateFilters() {
+        function populateFiltersWithActualData() {
           const weekFilter = document.getElementById("weekFilter");
           const weeks = new Set();
 
-          // If we have files, populate from them, otherwise use default weeks
-          if (allFiles.length > 0) {
-            allFiles.forEach(path => {
-              const parts = path.split('/');
-              if (parts[0].startsWith("week")) {
-                weeks.add(parts[0]);
-              }
-            });
-          } else {
-            // Fallback: add some default weeks
-            ['week00_1400-10-02-2025', 'week01_1400-17-02-2025', 'week02_1400-24-02-2025'].forEach(week => {
-              weeks.add(week);
-            });
-          }
-
-          [...weeks].sort().forEach(week => {
-            const option = document.createElement("option");
-            option.value = week;
-            option.textContent = week;
-            weekFilter.appendChild(option);
-            if (option.value == "week00_1400-10-02-2025"){
-              option.setAttribute("selected", "")
+          // Populate from actual files
+          allFiles.forEach(path => {
+            const parts = path.split('/');
+            if (parts[0].startsWith("week")) {
+              weeks.add(parts[0]);
             }
           });
+
+          if (weeks.size > 0) {
+            // Clear existing options except "All Weeks"
+            while (weekFilter.children.length > 1) {
+              weekFilter.removeChild(weekFilter.lastChild);
+            }
+
+            // Add actual weeks from API
+            [...weeks].sort().forEach(week => {
+              const option = document.createElement("option");
+              option.value = week;
+              option.textContent = week;
+              weekFilter.appendChild(option);
+            });
+
+            // Keep the current selection if it exists in new data, otherwise use first available
+            const currentWeek = weekFilter.value;
+            if (![...weeks].includes(currentWeek) && weeks.size > 0) {
+              weekFilter.value = [...weeks][0];
+            }
+          }
         }
 
         function renderTable() {
@@ -409,18 +434,21 @@
           const tbody = document.querySelector("#fileTable tbody");
           tbody.innerHTML = "";
 
-          // If no files loaded, show informative message
+          // If no files loaded from API, show informative message
           if (allFiles.length === 0) {
             const row = document.createElement("tr");
             const cell = document.createElement("td");
-            cell.colSpan = 3;
+            cell.colSpan = 2;
             cell.style.textAlign = "center";
             cell.style.padding = "40px";
             cell.innerHTML = `
-        <i class="fas fa-info-circle" style="font-size: 24px; color: #39c; margin-bottom: 10px;"></i>
-        <p>File list could not be loaded due to API limits.</p>
-        <p>Use the "Generate Download Command" button above to get CLI commands for downloading.</p>
-        `;
+              <i class="fas fa-info-circle" style="font-size: 24px; color: #39c; margin-bottom: 10px;"></i>
+              <p>File list is being loaded in the background.</p>
+              <p>You can use the "Generate Download Command" button to get CLI commands for downloading.</p>
+              <p style="font-size: 0.9em; margin-top: 10px; color: #666;">
+                Available weeks: ${predefinedWeeks.join(', ')}
+              </p>
+            `;
             row.appendChild(cell);
             tbody.appendChild(row);
             return;
@@ -447,7 +475,7 @@
           if (filtered.length === 0) {
             const row = document.createElement("tr");
             const cell = document.createElement("td");
-            cell.colSpan = 3;
+            cell.colSpan = 2;
             cell.style.textAlign = "center";
             cell.style.padding = "20px";
             cell.textContent = "No files match the current filters.";
@@ -470,7 +498,6 @@
 
             const nameCell = document.createElement("td");
             nameCell.textContent = path;
-
 
             row.appendChild(downloadCell);
             row.appendChild(nameCell);
@@ -517,25 +544,25 @@
           }
 
           const command = `huggingface-cli download ardannaoui/Natural_and_SemiUrban_Dataset \\
-        --repo-type dataset \\
-        --include "${includePattern}" \\
-        --local-dir .`;
+  --repo-type dataset \\
+  --include "${includePattern}" \\
+  --local-dir .`;
 
           const modal = document.createElement("div");
           modal.className = "command-modal";
           modal.innerHTML = `
-        <div class="command-modal-content">
-          <h3>Download Command</h3>
-          <p>Use this command to download the selected data using the Hugging Face CLI:</p>
-          <div class="command-code">${command}</div>
-          <button class="copy-button" onclick="copyCommandToClipboard()">Copy Command</button>
-          <button class="close-button" onclick="this.closest('.command-modal').remove()">Close</button>
-          <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
-            <strong>Note:</strong> Make sure you have the Hugging Face CLI installed:<br>
-            <code>pip install huggingface_hub</code>
-          </p>
-        </div>
-        `;
+            <div class="command-modal-content">
+              <h3>Download Command</h3>
+              <p>Use this command to download the selected data using the Hugging Face CLI:</p>
+              <div class="command-code">${command}</div>
+              <button class="copy-button" onclick="copyCommandToClipboard()">Copy Command</button>
+              <button class="close-button" onclick="this.closest('.command-modal').remove()">Close</button>
+              <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
+                <strong>Note:</strong> Make sure you have the Hugging Face CLI installed:<br>
+                <code>pip install huggingface_hub</code>
+              </p>
+            </div>
+          `;
 
           document.body.appendChild(modal);
           modal._command = command;
