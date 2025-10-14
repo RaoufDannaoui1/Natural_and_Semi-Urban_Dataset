@@ -117,24 +117,6 @@
           └── Natural_track3-4/</code></pre>
 
       <style>
-        table {
-          width: 100%;
-          margin: 20px auto;
-          border-collapse: collapse;
-        }
-
-        th,
-        td {
-          padding: 10px;
-          border: 1px solid #ccc;
-          text-align: left;
-        }
-
-        tr td:first-child,
-        tr td:nth-child(3) {
-          text-align: center;
-        }
-
         .filters-container {
           display: flex;
           flex-direction: column;
@@ -262,7 +244,7 @@
         }
       </style>
 
-      <h2>Browse Dataset Files</h2>
+      <h2>Browse Dataset</h2>
       <div id="loadingMessage" style="text-align: center; margin: 40px;">
         <div class="spinner"></div>
         <p>Loading dataset files...</p>
@@ -294,15 +276,9 @@
           <button class="commandButton" onclick="generateDownloadCommand()">Generate Download Command</button>
         </div>
 
-        <table id="fileTable">
-          <thead>
-            <tr>
-              <th style="text-align: center;">Download</th>
-              <th>File Path</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+        <div id="datasetInfo" style="text-align: center; padding: 40px;">
+          <!-- Content will be populated by JavaScript -->
+        </div>
       </div>
 
       <script>
@@ -311,9 +287,7 @@
 
         let allFiles = [];
         // Predefined weeks available immediately
-        const predefinedWeeks = ['week00_1400-10-02-2025', 'week01_0915-17-02-2025', 
-        'week02_0920-24-02-2025', 'week03_0900-03-03-2025', 'week04_0910-10-03-2025', 'week05_0910-17-03-2025', 
-        'week06_0900-24-03-2025', 'week07_0900-31-03-2025', 'week08_0900-07-04-2025', 'week09_0900-14-04-2025',];
+        const predefinedWeeks = ['week00_1400-10-02-2025', 'week01_0915-17-02-2025', 'week02_0920-24-02-2025'];
 
         // Load weeks immediately on page load
         function loadInitialWeeks() {
@@ -338,37 +312,36 @@
           }
         }
 
-        async function fetchTree(path = "") {
-          const url = `${baseApiUrl}/${path}`.replace(/\/+$/, "");
+        // FAST: Only fetch week directories, not the entire tree
+        async function fetchWeekDirectories() {
           try {
-            const res = await fetch(url);
-
-            // Check if we hit rate limit
-            if (res.status === 429) {
-              throw new Error("Rate limit exceeded. Please try again later.");
-            }
-
-            if (!res.ok) {
-              throw new Error(`HTTP error! status: ${res.status}`);
+            const res = await fetch(baseApiUrl);
+            
+            if (res.status === 429 || !res.ok) {
+              return; // Silent fail
             }
 
             const items = await res.json();
-
-            // Check if items is iterable
+            
             if (!items || typeof items[Symbol.iterator] !== 'function') {
-              throw new Error("Invalid response format from server");
+              return;
             }
 
-            for (const item of items) {
-              if (item.type === "file") {
-                allFiles.push(item.path);
-              } else if (item.type === "directory") {
-                await fetchTree(item.path);
-              }
-            }
+            // Only process week directories
+            const weekDirectories = items.filter(item => 
+              item.type === "directory" && item.path.startsWith("week")
+            );
+
+            weekDirectories.forEach(week => {
+              // Only add paths that we know for sure exist in every week
+              allFiles.push(`${week.path}/assets/`);
+              allFiles.push(`${week.path}/images_360/`);
+              allFiles.push(`${week.path}/point_clouds/`);
+            });
+
+
           } catch (err) {
-            console.error("Error fetching tree:", err);
-            throw err;
+            console.error("Error fetching week directories:", err);
           }
         }
 
@@ -381,15 +354,14 @@
           document.getElementById("loadingMessage").style.display = "none";
           document.getElementById("mainContent").style.display = "block";
 
-          // Try to fetch actual files in background
+          // FAST: Only fetch week directories in background
           try {
-            await fetchTree();
-            // If successful, update filters with actual data
+            await fetchWeekDirectories();
+            // Update filters with actual weeks from API
             populateFiltersWithActualData();
             renderTable();
           } catch (err) {
             console.error("Background loading failed:", err);
-            // Keep using predefined weeks, no need to show error to user
           }
         }
 
@@ -397,12 +369,17 @@
           const weekFilter = document.getElementById("weekFilter");
           const weeks = new Set();
 
-          // Populate from actual files
+          // Extract unique weeks from our file paths
           allFiles.forEach(path => {
             const parts = path.split('/');
             if (parts[0].startsWith("week")) {
               weeks.add(parts[0]);
             }
+          });
+
+          // Also include predefined weeks
+          predefinedWeeks.forEach(week => {
+            weeks.add(week);
           });
 
           if (weeks.size > 0) {
@@ -411,7 +388,7 @@
               weekFilter.removeChild(weekFilter.lastChild);
             }
 
-            // Add actual weeks from API
+            // Add weeks from API (sorted)
             [...weeks].sort().forEach(week => {
               const option = document.createElement("option");
               option.value = week;
@@ -419,7 +396,7 @@
               weekFilter.appendChild(option);
             });
 
-            // Keep the current selection if it exists in new data, otherwise use first available
+            // Keep the current selection if it exists in new data
             const currentWeek = weekFilter.value;
             if (![...weeks].includes(currentWeek) && weeks.size > 0) {
               weekFilter.value = [...weeks][0];
@@ -427,82 +404,34 @@
           }
         }
 
-        function renderTable() {
+                function renderTable() {
           const weekValue = document.getElementById("weekFilter").value;
           const typeValue = document.getElementById("typeFilter").value;
           const envValue = document.getElementById("envFilter").value;
-          const tbody = document.querySelector("#fileTable tbody");
-          tbody.innerHTML = "";
+          const infoDiv = document.getElementById("datasetInfo");
 
-          // If no files loaded from API, show informative message
-          if (allFiles.length === 0) {
-            const row = document.createElement("tr");
-            const cell = document.createElement("td");
-            cell.colSpan = 2;
-            cell.style.textAlign = "center";
-            cell.style.padding = "40px";
-            cell.innerHTML = `
-              <i class="fas fa-info-circle" style="font-size: 24px; color: #39c; margin-bottom: 10px;"></i>
-              <p>File list is being loaded in the background.</p>
-              <p>You can use the "Generate Download Command" button to get CLI commands for downloading.</p>
-              <p style="font-size: 0.9em; margin-top: 10px; color: #666;">
-                Available weeks: ${predefinedWeeks.join(', ')}
+          // Show directory structure info
+          const availableWeeks = [...new Set(allFiles.map(f => f.split('/')[0]))].sort();
+          
+          infoDiv.innerHTML = `
+            
+            <div style="background: #f0f8ff; padding: 15px; border-radius: 5px; margin: 15px 0; text-align: left;">
+              <p style="margin: 5px 0;"><strong>Available weeks for download:</strong></p>
+              <p style="text-align:center; font-weight: bold; color: #2ea44f; margin: 10px 0;">${availableWeeks.join(', ')}</p>
+
+              <p style="margin: 10px 0; font-size: 0.9em;">
+                <strong>Data types available in each week:</strong><br>
+                • assets/ (trajectory files)<br>
+                • images_360/ (panoramic images)<br>
+                • point_clouds/ (3D point clouds)
               </p>
-            `;
-            row.appendChild(cell);
-            tbody.appendChild(row);
-            return;
-          }
-
-          const filtered = allFiles.filter(path => {
-            if (weekValue !== "all" && !path.startsWith(weekValue)) return false;
-
-            if (typeValue !== "all") {
-              if (typeValue === "images_360" && !path.includes("/images_360/")) return false;
-              if (typeValue === "point_clouds" && !path.includes("/point_clouds/")) return false;
-              if (typeValue === "assets" && !path.includes("/assets/")) return false;
-            }
-
-            if (envValue !== "all" &&
-              (typeValue === "point_clouds" || typeValue === "images_360")) {
-              const envPattern = envValue === "Natural" ? "Natural_track" : "SemiUrban_track";
-              if (!path.includes(envPattern)) return false;
-            }
-
-            return true;
-          });
-
-          if (filtered.length === 0) {
-            const row = document.createElement("tr");
-            const cell = document.createElement("td");
-            cell.colSpan = 2;
-            cell.style.textAlign = "center";
-            cell.style.padding = "20px";
-            cell.textContent = "No files match the current filters.";
-            row.appendChild(cell);
-            tbody.appendChild(row);
-            return;
-          }
-
-          filtered.forEach(path => {
-            const row = document.createElement("tr");
-
-            const downloadCell = document.createElement("td");
-            const downloadLink = document.createElement("a");
-            downloadLink.href = `https://huggingface.co/datasets/${repoId}/resolve/main/${path}?download=true`;
-            downloadLink.target = "_blank";
-            downloadLink.setAttribute("download", "");
-            downloadLink.title = "Download file";
-            downloadLink.innerHTML = `<i class="fas fa-download" style="color:#39c;"></i>`;
-            downloadCell.appendChild(downloadLink);
-
-            const nameCell = document.createElement("td");
-            nameCell.textContent = path;
-
-            row.appendChild(downloadCell);
-            row.appendChild(nameCell);
-            tbody.appendChild(row);
-          });
+              
+              <p style="margin: 10px 0;">Use the filters above to generate download commands for specific data subsets</p>
+                
+              <p style="margin: 10px 0;"><strong>If individual file browsing is needed visit our <a href="https://huggingface.co/datasets/ardannaoui/Natural_and_SemiUrban_Dataset/tree/main" target="_blank">Hugging Face</a></strong> </p>
+            </div>
+            
+          `;
         }
 
         function updateFilterVisibility() {
