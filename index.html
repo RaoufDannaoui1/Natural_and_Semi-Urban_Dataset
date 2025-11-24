@@ -329,7 +329,7 @@
 
             // Only process week directories
             const weekDirectories = items.filter(item => 
-              item.type === "directory" && item.path.startsWith("week")
+              item.type === "directory" && item.path.toLowerCase().startsWith("week")
             );
 
             weekDirectories.forEach(week => {
@@ -372,7 +372,7 @@
           // Extract unique weeks from our file paths
           allFiles.forEach(path => {
             const parts = path.split('/');
-            if (parts[0].startsWith("week")) {
+            if (parts[0].toLowerCase().startsWith("week")) {
               weeks.add(parts[0]);
             }
           });
@@ -529,7 +529,7 @@
 
       <div class="note">
         <div><strong>Note!</strong></div>
-        Due to a technical issue, data corresponding to weeks 11-13 will not be processed and will not be included in this dataset. Thank you for understanding.
+        Due to a technical issue, data corresponding to weeks 11-13-33 will not be processed and will not be included in this dataset. Thank you for understanding.
       </div>
 
       <h2>Citation</h2>
