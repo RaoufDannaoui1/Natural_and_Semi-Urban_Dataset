@@ -33,7 +33,7 @@
   <div class="wrapper">
     <header>
       <h1>Natural and Semi-Urban Dataset</h1>
-      <p>A dataset designed to capture short-term environmental changes across both natural and semi-urban environments,
+      <p>A dataset designed to capture short-term and long-term environmental changes across both natural and semi-urban environments,
         with specific aim of analyzing how such dynamics impact localization and re-localization performance.</p>
       <p class="view">
         <a href="https://github.com/RaoufDannaoui1/Natural_and_Semi-Urban_Dataset">
@@ -43,19 +43,31 @@
       </p>
     </header>
     <section>
-      <p><img src="images/header.png" alt="Dataset overview"></p>
+      <div class="gif-row" style="display: flex; gap: 10px; align-items: center;">
+        <div style="height: calc(100% - 30px); overflow: hidden;">
+          <img src="images/natural_transition.gif"
+              alt="Left animation"
+              style="width: 100%; margin-top: -15px; margin-bottom: -15px;">
+        </div>
 
-      <p><strong>Weekly Multi-Temporal Dataset for Short-Term Localization and Environmental Change Analysis,</strong>
+        <div style="height: calc(100% - 30px); overflow: hidden;">
+          <img src="images/semi-urban_transition.gif"
+              alt="Right animation"
+              style="width: 100%; margin-top: -15px; margin-bottom: -15px;">
+        </div>
+      </div>
+
+      <p><strong>Weekly Multi-Temporal Dataset for Short-Term and Long-Term Localization and Environmental Change Analysis,</strong>
         designed to study the impact of real-world environmental changes on localization.</p>
 
       <h2>Overview</h2>
       <p>
-        The dataset is a short-term, high-resolution, multi-modal dataset focused on understanding how real-world
-        changes, such as vegetation growth, trimming, and object displacement, affect 3D LiDAR-based localization in
+        The dataset is a long-term, high-resolution, multi-modal dataset that have short-term changes, focused on understanding how real-world
+        changes, such as vegetation growth, seasonal transitions, trimming, and object displacement, affect 3D LiDAR-based localization in
         dynamic outdoor environments.
       </p>
       <p>
-        The data was collected weekly from February to April 2025, across two contrasting outdoor scenarios:
+        The data has been collected weekly since February 10, 2025, and is continuously growing with new acquisitions every week over the course of a full year, across two contrasting outdoor scenarios:
       <ul>
         <li>
           <strong>Natural Environment:</strong> INRAE Forest, Clermont-Ferrand
@@ -69,8 +81,8 @@
 
       </p>
       <p>
-        This dataset provides a unique opportunity to analyze and benchmark localization robustness over short time
-        intervals, making it ideal for applications in re-localization, change detection, SLAM, and dynamic mapping.
+        This dataset provides a unique opportunity to analyze and benchmark localization robustness over extended time
+        periods, capturing seasonal and long-term environmental evolution. It is ideal for applications in re-localization, change detection, SLAM, and dynamic mapping.
       </p>
 
       <h2>Data Content Description</h2>
